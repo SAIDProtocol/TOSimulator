@@ -1,4 +1,4 @@
-package edu.rutgers.winlab.tosimulator;
+package edu.rutgers.winlab.tosimulator.locationcalculator;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

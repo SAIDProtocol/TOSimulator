@@ -1,6 +1,6 @@
-package edu.rutgers.winlab.tosimulator;
+package edu.rutgers.winlab.tosimulator.locationcalculator;
 
-import static edu.rutgers.winlab.tosimulator.Transmitter.getDistance;
+import static edu.rutgers.winlab.tosimulator.locationcalculator.Transmitter.getDistance;
 import java.awt.geom.Point2D;
 import java.io.FileReader;
 import java.io.IOException;

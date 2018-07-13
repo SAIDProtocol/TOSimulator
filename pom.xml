@@ -36,7 +36,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>edu.rutgers.winlab.tosimulator.FieldFrame</mainClass>
+                            <mainClass>edu.rutgers.winlab.tosimulator.locationcalculator.FieldFrame</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

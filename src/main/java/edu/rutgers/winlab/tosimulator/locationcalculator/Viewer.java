@@ -1,7 +1,8 @@
-package edu.rutgers.winlab.tosimulator;
+package edu.rutgers.winlab.tosimulator.locationcalculator;
 
-import static edu.rutgers.winlab.tosimulator.Transmitter.getDistance;
-import static edu.rutgers.winlab.tosimulator.Transmitter.getDistanceSquare;
+import edu.rutgers.winlab.tosimulator.Tuple2;
+import static edu.rutgers.winlab.tosimulator.locationcalculator.Transmitter.getDistance;
+import static edu.rutgers.winlab.tosimulator.locationcalculator.Transmitter.getDistanceSquare;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -34,13 +35,17 @@ public class Viewer extends JComponent {
     public static final Color CAPTURE_DISC_NORMAL_COLOR = new Color(0, 255, 255, 32);
     public static final Color CAPTURE_DISC_HIGHLIGHT_COLOR = new Color(255, 0, 255, 32);
 
-    private final LinkedList<Tuple<Transmitter, Boolean>> transmitters = new LinkedList<>();
-    private final LinkedList<Tuple<CaptureDisc, Boolean>> captureDiscs = new LinkedList<>();
-    private final LinkedList<Tuple<Intersection, Boolean>> intersections = new LinkedList<>();
+    private final LinkedList<Tuple2<Transmitter, Boolean>> transmitters = new LinkedList<>();
+    private final LinkedList<Tuple2<CaptureDisc, Boolean>> captureDiscs = new LinkedList<>();
+    private final LinkedList<Tuple2<Intersection, Boolean>> intersections = new LinkedList<>();
 
     private final LinkedList<Consumer<List<Object>>> focusChangedHandlers = new LinkedList<>();
 
     public Viewer() {
+        init();
+    }
+    
+    private void init() {
         this.addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
@@ -123,12 +128,12 @@ public class Viewer extends JComponent {
         transmitters.clear();
         captureDiscs.clear();
         intersections.clear();
-        field.getTms().forEach(t -> transmitters.add(new Tuple<>(t, false)));
-        field.getCds().forEach(cd -> captureDiscs.add(new Tuple<>(cd, false)));
-        field.getIntersections().forEach(is -> intersections.add(new Tuple<>(is, false)));
+        field.getTms().forEach(t -> transmitters.add(new Tuple2<>(t, false)));
+        field.getCds().forEach(cd -> captureDiscs.add(new Tuple2<>(cd, false)));
+        field.getIntersections().forEach(is -> intersections.add(new Tuple2<>(is, false)));
     }
 
-    private void drawTransmitter(Graphics2D g, Tuple<Transmitter, Boolean> entry) {
+    private void drawTransmitter(Graphics2D g, Tuple2<Transmitter, Boolean> entry) {
         AffineTransform t = g.getTransform();
         Transmitter tm = entry.getV1();
         Boolean highlight = entry.getV2();
@@ -146,7 +151,7 @@ public class Viewer extends JComponent {
         g.setTransform(t);
     }
 
-    private void drawIntersection(Graphics2D g, Tuple<Intersection, Boolean> entry) {
+    private void drawIntersection(Graphics2D g, Tuple2<Intersection, Boolean> entry) {
         AffineTransform t = g.getTransform();
         Intersection is = entry.getV1();
         Boolean highlight = entry.getV2();
@@ -164,7 +169,7 @@ public class Viewer extends JComponent {
         g.setTransform(t);
     }
 
-    private void drawCaptureDisc(Graphics2D g, Tuple<CaptureDisc, Boolean> entry) {
+    private void drawCaptureDisc(Graphics2D g, Tuple2<CaptureDisc, Boolean> entry) {
         AffineTransform t = g.getTransform();
         CaptureDisc cd = entry.getV1();
         Boolean highlight = entry.getV2();

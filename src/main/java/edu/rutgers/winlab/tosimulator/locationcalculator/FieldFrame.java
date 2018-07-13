@@ -3,11 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.rutgers.winlab.tosimulator;
+package edu.rutgers.winlab.tosimulator.locationcalculator;
 
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;

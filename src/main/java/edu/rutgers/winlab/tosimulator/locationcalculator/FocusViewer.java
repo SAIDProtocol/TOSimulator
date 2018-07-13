@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.rutgers.winlab.tosimulator;
+package edu.rutgers.winlab.tosimulator.locationcalculator;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -23,6 +23,10 @@ public class FocusViewer extends JDialog implements Consumer<List<Object>> {
 
     public FocusViewer(JFrame owner) {
         super(owner, "Focus viewer", false);
+        init(owner);
+    }
+
+    private void init(JFrame owner) {
         add(jta);
         jta.setEnabled(false);
         jta.setBackground(Color.white);
