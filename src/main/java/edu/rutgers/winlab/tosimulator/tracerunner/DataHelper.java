@@ -6,12 +6,15 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -23,10 +26,10 @@ public class DataHelper {
 
     private static final Logger LOG = Logger.getLogger(DataHelper.class.getName());
 
-    public static Set<Transmitter> generateRandomTransmitters(
+    public static List<Transmitter> generateRandomTransmitters(
             Random random, int count,
             double xMin, double xMax, double yMin, double yMax) {
-        Set<Transmitter> ret = new HashSet<>();
+        List<Transmitter> ret = new ArrayList<>();
         double xDiff = xMax - xMin, yDiff = yMax - yMin;
         for (int i = 1; i <= count; i++) {
             double x = random.nextDouble() * xDiff + xMin;
@@ -39,30 +42,32 @@ public class DataHelper {
     public static void writeTransmitters(Collection<Transmitter> transmitters, String fileName) throws IOException {
         try (PrintStream ps = new PrintStream(fileName)) {
             transmitters.forEach(t -> {
-                ps.printf("%s\t%f\t%f%n", t.getName(), t.getLocation().getX(), t.getLocation().getY());
+                ps.printf("%s\t%d\t%d%n", t.getName(),
+                        Double.doubleToLongBits(t.getLocation().getX()),
+                        Double.doubleToLongBits(t.getLocation().getY()));
             });
         }
     }
 
-    public static Set<Transmitter> readTransmitters(String fileName) throws IOException {
-        Set<Transmitter> ret = new HashSet<>();
+    public static List<Transmitter> readTransmitters(String fileName) throws IOException {
+        List<Transmitter> ret = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("\t");
                 assert parts.length == 3;
-                double x = Double.parseDouble(parts[1]);
-                double y = Double.parseDouble(parts[2]);
+                double x = Double.longBitsToDouble(Long.parseLong(parts[1]));
+                double y = Double.longBitsToDouble(Long.parseLong(parts[2]));
                 ret.add(new Transmitter(parts[0], new Point2D.Double(x, y)));
             }
         }
         return ret;
     }
 
-    public static Set<Receiver> generateRandomReceivers(
+    public static List<Receiver> generateRandomReceivers(
             Random random, int count,
             double xMin, double xMax, double yMin, double yMax) {
-        Set<Receiver> ret = new HashSet<>();
+        List<Receiver> ret = new ArrayList<>();
         double xDiff = xMax - xMin, yDiff = yMax - yMin;
         for (int i = 1; i <= count; i++) {
             double x = random.nextDouble() * xDiff + xMin;
@@ -72,23 +77,25 @@ public class DataHelper {
         return ret;
     }
 
-    public static void writeReceivers(Collection<Receiver> transmitters, String fileName) throws IOException {
+    public static void writeReceivers(Collection<Receiver> receivers, String fileName) throws IOException {
         try (PrintStream ps = new PrintStream(fileName)) {
-            transmitters.forEach(r -> {
-                ps.printf("%s\t%f\t%f%n", r.getName(), r.getLocation().getX(), r.getLocation().getY());
+            receivers.forEach(r -> {
+                ps.printf("%s\t%d\t%d%n", r.getName(),
+                        Double.doubleToLongBits(r.getLocation().getX()),
+                        Double.doubleToLongBits(r.getLocation().getY()));
             });
         }
     }
 
-    public static Set<Receiver> readReceivers(String fileName) throws IOException {
-        Set<Receiver> ret = new HashSet<>();
+    public static List<Receiver> readReceivers(String fileName) throws IOException {
+        List<Receiver> ret = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("\t");
                 assert parts.length == 3;
-                double x = Double.parseDouble(parts[1]);
-                double y = Double.parseDouble(parts[2]);
+                double x = Double.longBitsToDouble(Long.parseLong(parts[1]));
+                double y = Double.longBitsToDouble(Long.parseLong(parts[2]));
                 ret.add(new Receiver(parts[0], new Point2D.Double(x, y)));
             }
         }
@@ -118,8 +125,8 @@ public class DataHelper {
             }
             //add event add next
             long nextStart = sendStart + repeatDuration + (long) Math.round(d);
-            System.out.println(sendStart);
-            System.out.println(nextStart);
+//            System.out.println(sendStart);
+//            System.out.println(nextStart);
             nextStart = Math.max(sendEnd, nextStart);
             Timeline.addEvent(nextStart, DataHelper::addNextTransmit,
                     t, transmitDuration, driftStandardDeviation, repeatDuration, remaining, random, ps);
@@ -148,56 +155,88 @@ public class DataHelper {
 
     }
 
-    private static void runEvent(Object... params) {
-        BufferedReader reader = (BufferedReader) params[0];
-        PrintStream output = (PrintStream) params[1];
-        Map<String, Transmitter> ts = (Map<String, Transmitter>) params[2];
-        Field f = (Field) params[3];
-        Transmitter t = (Transmitter) params[4];
-        long duration = (long) params[5];
-        int lineId = (int) params[6];
+    public static class TraceRunner {
 
-        f.handleTransmitStart(t);
-        Timeline.addEvent(Timeline.nowInUs() + duration, p -> {
-            ((PrintStream) p[0]).printf("%d\t%d\t%d%n",
-                    Timeline.nowInUs(),
-                    (int) p[3],
-                    ((Field) p[1]).handleTransmitEnd((Transmitter) p[2]).size());
-        }, output, f, t, lineId);
-        parseLine(reader, output, ts, f, lineId + 1);
-    }
+        private final Iterator<String> input;
+//        private final PrintStream output;
+        private final Map<String, Transmitter> ts;
+        private final Field f;
+        private int lineId = 0, count = 0, maxContinuousCount = 0;
+        private final Map<Transmitter, Integer> transmitterContinuousMisses;
+        private final HashMap<Integer, Integer> countinuousMissCounts = new HashMap<>();
 
-    private static void parseLine(BufferedReader reader, PrintStream output,
-            Map<String, Transmitter> ts, Field f, int lineId) {
-        try {
-            String line = reader.readLine();
-            if (line != null) {
+        public TraceRunner(String inputFile, String outputFile,
+                List<Transmitter> ts, List<Receiver> rs, double beta) throws IOException {
+            transmitterContinuousMisses
+                    = ts.stream().collect(Collectors.toMap(t -> t, t -> 0));
+            this.input = Files.lines(Paths.get(inputFile)).iterator();
+            this.ts = ts.stream().collect(Collectors.toMap(t -> t.getName(), t -> t));
+            this.f = new Field(ts, rs, beta);
+//            this.output = new PrintStream(outputFile);
+
+            parseLine();
+            Timeline.run();
+//            output.flush();
+//            output.close();
+        }
+
+        public int getLineId() {
+            return lineId;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public int getMaxContinuousCount() {
+            return maxContinuousCount;
+        }
+
+        public HashMap<Integer, Integer> getCountinuousMissCounts() {
+            return countinuousMissCounts;
+        }
+
+        private void runEvent(Object... params) {
+            Transmitter t = (Transmitter) params[0];
+            long duration = (long) params[1];
+            int lid = (int) params[2];
+
+            f.handleTransmitStart(t);
+            Timeline.addEvent(Timeline.nowInUs() + duration, p -> {
+                int capture = f.handleTransmitEnd(t).size();
+                if (capture > 0) {
+                    count++;
+                    transmitterContinuousMisses.compute(t, (tx, i) -> {
+                        countinuousMissCounts.merge(i, 1, Integer::sum);
+                        maxContinuousCount = Math.max(maxContinuousCount, i);
+                        return 0;
+                    });
+                } else {
+                    transmitterContinuousMisses.merge(t, 1, Integer::sum);
+                }
+//                output.printf("%d\t%d\t%d%n", Timeline.nowInUs(), lid, capture);
+            });
+            parseLine();
+        }
+
+        private void parseLine() {
+            if (input.hasNext()) {
+                String line = input.next();
                 String[] parts = line.split("\t");
                 assert parts.length == 3;
                 Transmitter t = ts.get(parts[0]);
                 assert t != null;
                 long time = Long.parseLong(parts[1]);
                 long duration = Long.parseLong(parts[2]);
-                Timeline.addEvent(time, DataHelper::runEvent,
-                        reader, output, ts, f, t, duration, lineId);
+                Timeline.addEvent(time, this::runEvent, t, duration, ++lineId);
             }
-        } catch (IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
         }
     }
 
-    public static void runTrace(
-            Set<Transmitter> transmitters, Set<Receiver> receivers, double beta,
+    public static synchronized void runTrace2(
+            List<Transmitter> transmitters, List<Receiver> receivers, double beta,
             String traceFile, String resultFile) throws IOException {
-        Map<String, Transmitter> ts = transmitters.stream().collect(
-                Collectors.toMap(t -> t.getName(), t -> t));
-        Field f = new Field(transmitters, receivers, beta);
-        try (PrintStream ps = new PrintStream(resultFile)) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(traceFile))) {
-                parseLine(reader, ps, ts, f, 1);
-                Timeline.run();
-                ps.flush();
-            }
-        }
+        TraceRunner tr = new TraceRunner(traceFile, resultFile, transmitters, receivers, beta);
+        System.out.printf("Lines: %,d, Captures: %,d%n", tr.getLineId(), tr.getCount());
     }
 }

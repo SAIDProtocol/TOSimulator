@@ -16,6 +16,7 @@ public class Field {
         CaptureT1, CaptureT2, CaptureNeither
     }
 
+    public static final double EPSILON = 0.00001;
     private final Set<Transmitter> transmitters;
     private final Set<Receiver> receivers;
     private final HashMap<Transmitter, Set<Receiver>> transmittingDevices;
@@ -61,9 +62,9 @@ public class Field {
     public CaptureStatus canCapture(Transmitter t1, Transmitter t2, Receiver receiver) {
         double distanceSquare1 = Transmitter.getDistanceSquare(t1.getLocation(), receiver.getLocation());
         double distanceSquare2 = Transmitter.getDistanceSquare(t2.getLocation(), receiver.getLocation());
-        if (distanceSquare1 < distanceSquare2 * betaSquare) {
+        if (distanceSquare1 <= distanceSquare2 * betaSquare + EPSILON) {
             return CaptureStatus.CaptureT1;
-        } else if (distanceSquare2 < distanceSquare1 * betaSquare) {
+        } else if (distanceSquare2 <= distanceSquare1 * betaSquare + EPSILON) {
             return CaptureStatus.CaptureT2;
         } else {
             return CaptureStatus.CaptureNeither;
