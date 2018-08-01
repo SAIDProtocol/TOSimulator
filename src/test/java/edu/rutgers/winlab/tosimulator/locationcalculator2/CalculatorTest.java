@@ -7,10 +7,6 @@ package edu.rutgers.winlab.tosimulator.locationcalculator2;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -56,8 +52,7 @@ public class CalculatorTest {
         Calculator.Point[] receivers = Calculator.calculateReceiverLocations(transmitters, rCount);
         System.out.println("========================================");
 
-        AtomicInteger ai = new AtomicInteger();
-
+//        AtomicInteger ai = new AtomicInteger();
         try (PrintStream ps = new PrintStream(receiverFile)) {
             for (int i = 0; i < receivers.length; i++) {
                 if (receivers[i] != null) {
@@ -83,4 +78,17 @@ public class CalculatorTest {
 //        System.out.printf("Coverage: %d%n", count);
     }
 
+    @Test
+    public void test3() throws IOException {
+        String transmitterFile = "ts_rand_0.txt", receiverFolder = "rs_kmeans";
+        int receiverCount = 99;
+        Calculator.Point[] transmitters = Calculator.readPoints(transmitterFile);
+        for (int i = 1; i <= receiverCount; i++) {
+            Calculator.Point[] receivers = Calculator.readPoints(String.format("%s/rs_%d.txt", receiverFolder, i));
+            long count = Calculator.calculateCoveragesSingle(transmitters, receivers);
+            System.out.printf("%d\t%d%n", i, count);
+        }
+
+//        System.out.printf("Coverage: %d%n", count);
+    }
 }

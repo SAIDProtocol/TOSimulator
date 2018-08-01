@@ -50,7 +50,7 @@ public class DataHelperTest {
 //    @Test
     public void test1() throws IOException {
         double xMin = 0, xMax = 100, yMin = 0, yMax = 100;
-        int transmitterCount = 100, receiverCount = 109;
+        int transmitterCount = 100, receiverCount = 106;
         long transmissionTime = 50 * Timeline.MS;
         long startDiff = 50 * Timeline.MS, repeatDuration = startDiff * transmitterCount;
         int repeatTimes = 20000;
@@ -93,7 +93,7 @@ public class DataHelperTest {
         ), rsFile);
     }
 
-    @Test
+//    @Test
     public void test2() throws IOException {
         String tsFile = "ts_rand_0.txt", rsFile = "rs_tmp_2.txt", traceFile = "trace_0.txt";
 //        String tsFile = "ts_rand_0.txt", rsFile = "rs_rand_0.txt", traceFile = "trace_0.txt";
@@ -153,7 +153,7 @@ public class DataHelperTest {
 
     }
 
-    @Test
+//    @Test
     public void test3() throws IOException {
 //   String tsFile = "ts_rand_0.txt", rsFile = "rs_tmp_2.txt", traceFile = "trace_0.txt";
         String tsFile = "ts_rand_0.txt", rsFile = "rs_rand_0.txt", traceFile = "trace_0.txt";
@@ -179,6 +179,58 @@ public class DataHelperTest {
                 currReceivers.remove(receiverCount);
             }
             DataHelper.TraceRunner tr = new DataHelper.TraceRunner(traceFile, null, transmitters, currReceivers, beta);
+            maxContinuousMisses = Integer.max(maxContinuousMisses, tr.getMaxContinuousCount());
+            receiverCountContinuousMisses.put(receiverCount, tr.getCountinuousMissCounts());
+            long t2 = System.nanoTime();
+            System.out.printf("%d\t%,d\t%,d%n", receiverCount, tr.getCount(), t2 - t1);
+
+//            System.out.println("=======================");
+//            System.out.printf("Receivers: %d%n", receivers.size());
+//            receivers.forEach(t -> System.out.printf("%s\t%f\t%f%n", t.getName(), t.getLocation().getX(), t.getLocation().getY()));
+//            System.out.println("=======================");
+//            ReportObject ro = new ReportObject();
+//            ro.setKey("Time", () -> String.format("%,d", Timeline.nowInUs()));
+//            ro.beginReport();
+//            DataHelper.runTrace(transmitters, receivers, beta, traceFile, resultFile);
+//            DataHelper.runTrace2(transmitters, receivers, beta, traceFile, resultFile);
+//            ro.endReport();
+        }
+        System.out.println("=======================");
+        System.out.print("R");
+        for (int missCount = 0; missCount <= maxContinuousMisses; missCount++) {
+            System.out.printf("\t%d", missCount);
+        }
+        System.out.println();
+        for (int receiverCount = receiverCountStart; receiverCount <= receiverCountEnd; receiverCount++) {
+            HashMap<Integer, Integer> continuousMisses = receiverCountContinuousMisses.get(receiverCount);
+            System.out.printf("%d", receiverCount);
+            for (int missCount = 0; missCount <= maxContinuousMisses; missCount++) {
+                Integer i = continuousMisses.get(missCount);
+                System.out.printf("\t%d", i == null ? 0 : i);
+            }
+            System.out.println();
+        }
+
+    }
+
+    @Test
+    public void test5() throws IOException {
+        String tsFile = "ts_rand_0.txt", rsFolder = "rs_kmeans", traceFile = "trace_0.txt";
+        int receiverCountStart = 1, receiverCountEnd = 99;
+        double beta = 0.5;
+
+        List<Transmitter> transmitters = DataHelper.readTransmitters(tsFile);
+//        transmitters.forEach(t -> System.out.printf("%s\t%f\t%f%n", t.getName(), t.getLocation().getX(), t.getLocation().getY()));
+
+        HashMap<Integer, HashMap<Integer, Integer>> receiverCountContinuousMisses = new HashMap<>();
+        int maxContinuousMisses = 0;
+
+        System.out.println("KMeans=======================");
+        System.out.println("R\tC\tT (ns)");
+        for (int receiverCount = receiverCountStart; receiverCount <= receiverCountEnd; receiverCount++) {
+            List<Receiver> receivers = DataHelper.readReceivers(String.format("%s/rs_%d.txt", rsFolder, receiverCount));
+            long t1 = System.nanoTime();
+            DataHelper.TraceRunner tr = new DataHelper.TraceRunner(traceFile, null, transmitters, receivers, beta);
             maxContinuousMisses = Integer.max(maxContinuousMisses, tr.getMaxContinuousCount());
             receiverCountContinuousMisses.put(receiverCount, tr.getCountinuousMissCounts());
             long t2 = System.nanoTime();

@@ -194,6 +194,41 @@ public class Calculator {
         }
     }
 
+    public static long calculateCoveragesSingle(
+            Point[] transmitters,
+            Point[] receivers) {
+        long t1 = System.currentTimeMillis();
+        HashSet<CaptureDisc> discs = Stream.of(transmitters)
+                .parallel()
+                .map(t -> {
+                    // t is capture, i is ignore
+                    CaptureDisc[] tmp = new CaptureDisc[transmitters.length];
+                    for (int i = 0; i < transmitters.length; i++) {
+                        if (transmitters[i] == t) {
+                            continue;
+                        }
+                        tmp[i] = new CaptureDisc(t, transmitters[i]);
+                    }
+                    return tmp;
+                })
+                .collect(new ArrayCollector<>());
+        discs.remove(null);
+        long t2 = System.currentTimeMillis();
+//        System.out.printf("Calculate discs, used: %,dms, size:%,d%n", t2 - t1, discs.size());
+
+        long count = discs.parallelStream().filter(disc -> {
+            boolean ret = false;
+            for (Point receiver : receivers) {
+                if (disc.withIn(receiver)) {
+                    ret = true;
+                    break;
+                }
+            }
+            return ret;
+        }).count();
+        return count;
+    }
+
     public static Point[] calculateReceiverLocations(
             Point[] transmitters,
             int receiverCount) {
