@@ -15,7 +15,6 @@ package edu.rutgers.winlab.tosimulator.locationcalculator2;
 // TODO: consistency with terms "clustering" and "iteration" 
 // (assignment + update step or 'x' number of those)
 // TODO: Give user option to define stopping criteria based on time elapsed
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -583,5 +582,4 @@ public class KMeans {
         return "KMeans++ took: " + (double) (end - start) / 1000.0 + " seconds";
     }
 
- 
 }

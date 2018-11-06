@@ -5,8 +5,12 @@
  */
 package edu.rutgers.winlab.tosimulator.locationcalculator2;
 
+import edu.rutgers.winlab.tosimulator.tracerunner.DataHelper;
+import edu.rutgers.winlab.tosimulator.tracerunner.Transmitter;
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -36,6 +40,27 @@ public class CalculatorTest {
 
     @After
     public void tearDown() {
+    }
+
+    @Test
+    public void generateCircularTransmitters() throws IOException {
+        int transmitterCount = 100;
+        String transmitterFile = "ts_circle.txt";
+        double width = 80, height = 80, centerX = 50, centerY = 50;
+
+        ArrayList<Transmitter> transmitters = new ArrayList<>();
+        for (int i = 0; i < transmitterCount; i++) {
+            double angle = Math.PI * 2 / transmitterCount * i;
+            double x = centerX + Math.cos(angle) * width / 2;
+            double y = centerY + Math.sin(angle) * height / 2;
+            transmitters.add(new Transmitter("R" + (i + 1), new Point2D.Double(x, y)));
+        }
+        DataHelper.writeTransmitters(transmitters, transmitterFile);
+
+        Calculator.Point[] ts = Calculator.readPoints(transmitterFile);
+        for (Calculator.Point t : ts) {
+            System.out.printf("%f\t%f%n", t.getX(), t.getY());
+        }
     }
 
 //    @Test
@@ -78,7 +103,7 @@ public class CalculatorTest {
 //        System.out.printf("Coverage: %d%n", count);
     }
 
-    @Test
+//    @Test
     public void test3() throws IOException {
         String transmitterFile = "ts_rand_0.txt", receiverFolder = "rs_kmeans";
         int receiverCount = 99;
