@@ -28,6 +28,8 @@ public class CalculatorTest {
 
     @BeforeClass
     public static void setUpClass() {
+        Calculator.setBeta(0.1);
+        System.out.printf("BETA=%f%n", Calculator.getBeta());
     }
 
     @AfterClass
@@ -42,7 +44,7 @@ public class CalculatorTest {
     public void tearDown() {
     }
 
-    @Test
+//    @Test
     public void generateCircularTransmitters() throws IOException {
         int transmitterCount = 100;
         String transmitterFile = "ts_circle.txt";
@@ -65,7 +67,7 @@ public class CalculatorTest {
 
 //    @Test
     public void test1() throws IOException {
-        String transmitterFile = "ts_rand_0.txt", receiverFile = "rs_tmp_2.txt";
+        String transmitterFile = "ts_circle.txt", receiverFile = "rs_circle.txt";
         int rCount = 9900;
 
         Calculator.Point[] transmitters = Calculator.readPoints(transmitterFile);
@@ -95,17 +97,17 @@ public class CalculatorTest {
 
 //    @Test
     public void test2() throws IOException {
-//        String transmitterFile = "ts_rand_0.txt", receiverFile = "rs_tmp_2.txt";
-        String transmitterFile = "ts_rand_0.txt", receiverFile = "rs_rand_0.txt";
+        String transmitterFile = "ts_circle.txt", receiverFile = "rs_circle.txt";
+//        String transmitterFile = "ts_rand_0.txt", receiverFile = "rs_rand_0.txt";
         Calculator.Point[] transmitters = Calculator.readPoints(transmitterFile);
         Calculator.Point[] receivers = Calculator.readPoints(receiverFile);
         Calculator.calculateCoverages(transmitters, receivers);
 //        System.out.printf("Coverage: %d%n", count);
     }
 
-//    @Test
+    @Test
     public void test3() throws IOException {
-        String transmitterFile = "ts_rand_0.txt", receiverFolder = "rs_kmeans";
+        String transmitterFile = "ts_circle.txt", receiverFolder = "rs_circle_kmeans";
         int receiverCount = 99;
         Calculator.Point[] transmitters = Calculator.readPoints(transmitterFile);
         for (int i = 1; i <= receiverCount; i++) {

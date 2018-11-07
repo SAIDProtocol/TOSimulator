@@ -8,7 +8,6 @@ package edu.rutgers.winlab.tosimulator.locationcalculator2;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Paths;
 import java.util.Random;
 import java.util.stream.Stream;
 import org.junit.After;
@@ -94,7 +93,7 @@ public class KMeansTest {
 
     @Test
     public void test1() throws IOException {
-        String transmitterFile = "ts_rand_0.txt", receiverFolder = "rs_kmeans/";
+        String transmitterFile = "ts_circle.txt", receiverFolder = "rs_circle_kmeans/";
         File f = new File(receiverFolder);
         if (!f.exists()) {
             f.mkdirs();
